@@ -5,11 +5,14 @@ services :
     image: postgres
     container_name: postgres
     volumes:
-    - ./data/db:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data
     environment:
-    - POSTGRES_DB=postgres
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports: 
+      - "5432:5432"
+
   server:
     image: server
     command: python3 manage.py runserver 0.0.0.0:8000
@@ -18,7 +21,11 @@ services :
       context: ./server
       #dockerfile: ./Dockerfile
     ports: 
-    - "8000:8000"
+      - "8000:8000"
+    volumes: 
+      - "./server:/app"
+    depends_on: 
+      - db
 
   client:
     image: client
@@ -27,4 +34,4 @@ services :
       context: ./client/
       #dockerfile: ./Dockerfile
     ports: 
-    - 4200:80
+      - "4200:80"
