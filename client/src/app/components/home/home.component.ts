@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { User } from 'src/app/interfaces/user';
+import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
@@ -9,52 +8,44 @@ import { ApiService } from 'src/app/services/api.service';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
 
-  users$: Observable<User[]>;
-  form: FormGroup;
+  login: any = {}
+  constructor(private apiService: ApiService, private snackbar: MatSnackBar, private router: Router) {}
 
-  constructor(private apiService: ApiService, private form_builder: FormBuilder) { }
-
-  ngOnInit(): void {
-    this.getUsers();
-  }
-
-  public getUsers() {
-    this.apiService.getData({url: this.apiService.usersUrl}).subscribe(
-      data => {
-        console.log(data)
-        this.users$ = data
-        console.log(this.users$)
-    });
-
-    this.form = this.form_builder.group({
-      name: '',
-      phone: '',
-      address: ''
-    });
-  }
-
-  addUser() {
-    this.apiService.postData({url: this.apiService.usersUrl, data: this.form.value}).subscribe(
-      data => {
-        console.log(data);
-        this.getUsers();
-      }
-    )
-  }
-
-  deleteUser(id) {
-    console.log(id)
-    if(id){
-      this.apiService.delete({url: this.apiService.usersUrl+id}).subscribe(
-        data => {
-          console.log(data)
-          this.getUsers();
-        }
-      )
-
+  ngOnInit() {
+    this.login = {
+      email: '',
+      password: ''
     }
   }
 
+  login_() {
+    console.log("login clicked ")
+    console.log(this.login)
+
+    this.apiService.postData({url: this.apiService.auth + this.apiService.token + this.apiService.login, data: this.login }).subscribe(
+      result => {
+        console.log(result);
+        if(result) {
+          let message = "User login successfully"
+          let action = "Success"
+          this.snackbar.open(message, action, {
+            duration: 1000
+          })
+          console.log(result.auth_token);
+          setTimeout( () => {
+            localStorage.setItem('token', result.auth_token);
+            this.router.navigate(['/login'])
+          }, 1000);
+        } else {
+          let message = "User login failed"
+          let action = "Fail"
+          this.snackbar.open(message, action, {
+            duration: 1000
+          })
+        }
+      }
+    )
+  }
 }

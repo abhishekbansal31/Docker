@@ -1,0 +1,11 @@
+<div class="register">
+    <h1> Welcome </h1>
+    <label>First Name :      </label><input [(ngModel)]="register.first_name">                  <br>
+    <label>Last Name :       </label><input [(ngModel)]="register.last_name">                   <br>
+    <label>Email :           </label><input [(ngModel)]="register.email">                       <br>
+    <label>Username :        </label><input [(ngModel)]="register.username">                    <br>
+    <label>Password :        </label><input [(ngModel)]="register.password" type="password">    <br>
+    <label>Retype Password : </label><input [(ngModel)]="register.re_password" type="password"> <br>
+    <label>Phone :           </label><input [(ngModel)]="register.phone">                       <br><br>
+    <button (click)="registerUser()">Register</button>                                          <br>
+</div>

@@ -1,3 +1,5 @@
+#Stage 1: We are copying our app code in the "app" folder and installing app dependencies from requirements.txt file 
+#         and running server from the command given in docker-compose.yml command.
 FROM python:3 AS build-step
 ENV PYTHONUNBUFFERED=1
 
@@ -5,10 +7,10 @@ ENV PYTHONUNBUFFERED=1
 RUN mkdir /app
 WORKDIR /app
 
-# Copy app dependencies.
+# Copy backend dependencies.
 COPY requirements.txt /app
 
-# Install app dependencies.
+# Install backend dependencies.
 RUN pip install -r requirements.txt
 
 # Copy app files.

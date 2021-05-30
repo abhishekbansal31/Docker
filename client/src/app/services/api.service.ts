@@ -10,9 +10,13 @@ import { User } from '../interfaces/user';
 })
 
 export class ApiService {
-  DJANGO_API_URL = 'http://localhost:8000/api';
+  DJANGO_SERVER_URL = 'http://localhost:8000/';
 
-  usersUrl = '/users/'
+  api = 'api/'
+  auth = 'auth/'
+  users = 'users/'
+  token = 'token/'
+  login = 'login/'
 
   constructor(private http: HttpClient) { }
 
@@ -27,7 +31,7 @@ export class ApiService {
   public getData(info): Observable<any> {
     console.log(info)
     if(info.url){
-      var url = this.DJANGO_API_URL+ info.url
+      var url = this.DJANGO_SERVER_URL+ info.url
       if(info.data){
         url = url + this.json2queryparam(info.data)
       }
@@ -41,7 +45,7 @@ export class ApiService {
 
   public postData(info): Observable<any> {
     if(info && info.url && info.data){
-      return this.http.post<any>(this.DJANGO_API_URL+ info.url, info.data).pipe(
+      return this.http.post<any>(this.DJANGO_SERVER_URL+ info.url, info.data).pipe(
         catchError(this.errorHandler<any>('postData', []))
         );
       return of()
@@ -50,7 +54,7 @@ export class ApiService {
 
   public delete(info) {
     if(info && info.url) {
-      return this.http.delete(this.DJANGO_API_URL+ info.url).pipe(
+      return this.http.delete(this.DJANGO_SERVER_URL+ info.url).pipe(
         catchError(this.errorHandler<any>('delete', []))
       );
     }
