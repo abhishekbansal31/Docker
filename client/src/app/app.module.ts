@@ -16,7 +16,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     AppComponent,
     LoginComponent,
     HomeComponent,
-    RegisterComponent
+    RegisterComponent,
   ],
   //modules
   imports: [

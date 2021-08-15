@@ -1,3 +1,15 @@
-<div *ngIf="token">
-    <p>login works!</p>
+<div class="home">
+    <h1>Welcome to My App</h1>
+    <br><br>
+
+    <div>
+        <label>Email :             </label><input [(ngModel)]="login.email">                    <br>
+        <label>Password :          </label><input [(ngModel)]="login.password" type="password">    <br>
+        <button (click) = "login_()" [disabled]="login.email.trim()=='' || login.password.trim()==''" >Login</button>
+    </div>
+    <br><br>
+    <div>
+        <button routerLink="/register">Register</button>
+    </div>
+    <br><br>
 </div>

@@ -5,11 +5,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 # Create your views here.
 
-@api_view(['GET'])
-#@permission_classes({IsAuthenticated})
-def restricted2(request, *args, **kwargs):
-    return Response(data='any message', status=status.HTTP_200_OK)
-
 class restricted(APIView):
     permission_classes = ( IsAuthenticated, )
 

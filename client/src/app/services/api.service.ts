@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
@@ -17,8 +17,12 @@ export class ApiService {
   users = 'users/'
   token = 'token/'
   login = 'login/'
+  logout = 'logout/'
 
-  constructor(private http: HttpClient) { }
+  headers: HttpHeaders = new HttpHeaders()
+  
+  constructor(private http: HttpClient) {
+  }
 
   private errorHandler<T> (operation = 'operation', result?:T) {
     return (error: any): Observable<T> => {
@@ -36,16 +40,22 @@ export class ApiService {
         url = url + this.json2queryparam(info.data)
       }
       console.log(url)
-      return this.http.get<any>(url).pipe(
+      
+      this.refreshHeader()
+      console.log(this.headers)
+      return this.http.get<any>(url, {headers: this.headers}).pipe(
         catchError(this.errorHandler<any>('getData', []))
         );
       return of()
     }
   }
 
-  public postData(info): Observable<any> {
+  public postData(info, isLoginCall=false): Observable<any> {
     if(info && info.url && info.data){
-      return this.http.post<any>(this.DJANGO_SERVER_URL+ info.url, info.data).pipe(
+
+      this.refreshHeader(isLoginCall)
+      console.log(this.headers)
+      return this.http.post<any>(this.DJANGO_SERVER_URL+ info.url, info.data, {headers: this.headers}).pipe(
         catchError(this.errorHandler<any>('postData', []))
         );
       return of()
@@ -59,6 +69,14 @@ export class ApiService {
       );
     }
     return of()
+  }
+
+  refreshHeader(isLoginCall=false) {
+    this.headers = new HttpHeaders()
+    if(!isLoginCall) {
+      this.headers = this.headers.set('Authorization', 'Token '+localStorage.getItem('token'));
+    }
+    this.headers = this.headers.set('Content-Type', 'application/json');
   }
 
   json2queryparam(data){
