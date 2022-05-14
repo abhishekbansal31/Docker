@@ -2,7 +2,7 @@ version: "3.7"
 
 services :
   db:
-    image: postgres
+    image: postgres:14.2
     container_name: postgres
     volumes:
       - ./data/db:/var/lib/postgresql/data
@@ -15,13 +15,16 @@ services :
 
   server:
     image: server
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "python3 manage.py collectstatic --noinput &&
+             python3 manage.py migrate &&
+             python3 manage.py runserver 0.0.0.0:8000"
     container_name: server
     build: 
       context: ./server
       #dockerfile: ./Dockerfile
     ports: 
-      - "8000:8000"
+      - "8001:8000"
     volumes: 
       - "./server:/app"
     depends_on: 

@@ -26,11 +26,18 @@ export class RegisterComponent implements OnInit {
 
   registerUser() {
     console.log(this.register)
-    this.apiService.postData({url: this.apiService.auth+this.apiService.users, data: this.register}).subscribe(
+    this.apiService.postData({url: this.apiService.auth+this.apiService.users, data: this.register}, true).subscribe(
       data => {
         console.log(data);
-        let message = "User created successfully"
-        let action = "Success"
+        let message = ""
+        let action = ""
+        if(data && data!='[]') {
+          message = "User created successfully"
+          action = "Success"
+        } else {
+          message = "User not created successfully"
+          action = "Failed"  
+        }
         this.snackbar.open(message, action, {
           duration: 1000
         })

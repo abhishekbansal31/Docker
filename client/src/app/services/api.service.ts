@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
-import { User } from '../interfaces/user';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { MatSnackBar       } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class ApiService {
-  DJANGO_SERVER_URL = 'http://localhost:8000/';
+  DJANGO_SERVER_URL = 'http://localhost:8001/';
 
   api = 'api/'
   auth = 'auth/'
@@ -19,16 +19,39 @@ export class ApiService {
   login = 'login/'
   logout = 'logout/'
 
+  BAD_REQUEST = 400
+
   headers: HttpHeaders = new HttpHeaders()
   
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private snackbar: MatSnackBar) {
   }
 
   private errorHandler<T> (operation = 'operation', result?:T) {
     return (error: any): Observable<T> => {
       console.error(error);
+      if(error?.status==this.BAD_REQUEST) {
+        if(error?.error) {
+          Object.keys(error.error).forEach(key=> {
+            let value = error.error[key]
+            if(value!=null && (typeof value == 'object')) {
 
-      return of(result as T);
+              Object.keys(value).forEach(key_2=> {
+                let value_2 = value[key_2]
+                this.snackbar.open(value_2, error?.statusText || 'Bad Request', {
+                  duration: 2000
+                })
+              })
+            } else {
+              this.snackbar.open(value, error?.statusText || 'Bad Request', {
+                duration: 2000
+              })
+            }
+          })
+        }
+        // return of(error?.error || result as T);
+      } else {
+        return of(result as T);
+      }
     };
   }
 
@@ -50,15 +73,14 @@ export class ApiService {
     }
   }
 
-  public postData(info, isLoginCall=false): Observable<any> {
+  public postData(info, isLoginorRegisterCall=false): Observable<any> {
     if(info && info.url && info.data){
 
-      this.refreshHeader(isLoginCall)
+      this.refreshHeader(isLoginorRegisterCall)
       console.log(this.headers)
       return this.http.post<any>(this.DJANGO_SERVER_URL+ info.url, info.data, {headers: this.headers}).pipe(
-        catchError(this.errorHandler<any>('postData', []))
+        catchError(this.errorHandler<any>('postData', ['Please contact customer support.']))
         );
-      return of()
     }
   }
 
@@ -71,9 +93,9 @@ export class ApiService {
     return of()
   }
 
-  refreshHeader(isLoginCall=false) {
+  refreshHeader(isLoginorRegisterCall=false) {
     this.headers = new HttpHeaders()
-    if(!isLoginCall) {
+    if(!isLoginorRegisterCall) {
       this.headers = this.headers.set('Authorization', 'Token '+localStorage.getItem('token'));
     }
     this.headers = this.headers.set('Content-Type', 'application/json');

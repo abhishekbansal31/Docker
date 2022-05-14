@@ -7,13 +7,13 @@ RUN mkdir -p /client
 WORKDIR /client
 
 # Copy app dependencies.
-COPY package.json package-lock.json /client/
+COPY package.json package-lock.json ./
 
 # Install app dependencies.
 RUN npm install
 
 # Copy app files.
-COPY ./ /client
+COPY ./ ./
 
 # Build app
 RUN npm run build
@@ -29,5 +29,7 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build-step /client/dist/client/* /usr/share/nginx/html/
 
 # Copy nginx configuration file.
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bkup
+COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
