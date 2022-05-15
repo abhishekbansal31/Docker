@@ -1,11 +1,14 @@
+<form [formGroup]="registerFormGroup">
 <div class="register">
     <h1> Welcome </h1>
-    <label>First Name :      </label><input [(ngModel)]="register.first_name">                  <br>
-    <label>Last Name :       </label><input [(ngModel)]="register.last_name">                   <br>
-    <label>Email :           </label><input [(ngModel)]="register.email">                       <br>
-    <label>Username :        </label><input [(ngModel)]="register.username">                    <br>
-    <label>Password :        </label><input [(ngModel)]="register.password" type="password">    <br>
-    <label>Retype Password : </label><input [(ngModel)]="register.re_password" type="password"> <br>
-    <label>Phone :           </label><input [(ngModel)]="register.phone">                       <br><br>
-    <button (click)="registerUser()">Register</button>                                          <br>
+    <label>First Name :      </label><input formControlName="first_name" [(ngModel)]="register.first_name">                  <br>
+    <label>Last Name :       </label><input formControlName="last_name"  [(ngModel)]="register.last_name">                   <br>
+    <label>Email :           </label><input formControlName="email"      [(ngModel)]="register.email" type="email" > <label *ngIf="registerFormGroup.controls['email']?.errors?.email"> Invalid Email. </label>        <br>
+    <label>Username :        </label><input formControlName="username"   [(ngModel)]="register.username">                    <br>
+    <label>Password :        </label><input formControlName="password"   [(ngModel)]="register.password" type="password">    <br>
+    <label>Retype Password : </label><input formControlName="re_password" [(ngModel)]="register.re_password" type="password"> <label *ngIf="!passwordMatching()"> Password must match. </label> <br>
+    <label>Phone :           </label><input formControlName="phone"       [(ngModel)]="register.phone">                       <br>
+    <br>
+    <button type="button" [disabled]="!(registerFormGroup?.status==='VALID' && passwordMatching()) " (click)="registerUser()">Register</button>                                          <br>
 </div>
+</form>

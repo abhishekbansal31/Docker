@@ -12,6 +12,9 @@ COPY package.json package-lock.json ./
 # Install app dependencies.
 RUN npm install
 
+# Remove old src code if exists to copy latest src, just in case
+RUN rm -rf src
+
 # Copy app files.
 COPY ./ ./
 

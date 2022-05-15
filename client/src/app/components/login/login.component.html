@@ -1,12 +1,18 @@
 <div class="home">
     <h1>Welcome to My App</h1>
     <br><br>
-
-    <div>
-        <label>Email :             </label><input [(ngModel)]="login.email">                    <br>
-        <label>Password :          </label><input [(ngModel)]="login.password" type="password">    <br>
-        <button (click) = "login_()" [disabled]="login.email.trim()=='' || login.password.trim()==''" >Login</button>
-    </div>
+    <form [formGroup]="loginFormGroup">
+        <div>
+            <label>Email :             </label><input formControlName="email" [(ngModel)]="login.email" type="email">
+                                        <label *ngIf="formEmailControl.errors?.email"> Invalid Email. </label>
+            <br>
+            
+            <label>Password :          </label><input formControlName="password" [(ngModel)]="login.password" type="password">
+            <br>
+            
+            <button type="button" [disabled]="loginFormGroup.status!=='VALID'" (click)="login_form()" >Login</button>
+        </div> 
+    </form>
     <br><br>
     <div>
         <button routerLink="/register">Register</button>

@@ -4,6 +4,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MatSnackBar       } from '@angular/material/snack-bar';
+import { HttpStatusCode } from '../interfaces/enums';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -23,13 +25,13 @@ export class ApiService {
 
   headers: HttpHeaders = new HttpHeaders()
   
-  constructor(private http: HttpClient, private snackbar: MatSnackBar) {
+  constructor(private http: HttpClient, private snackbar: MatSnackBar, private router: Router) {
   }
 
   private errorHandler<T> (operation = 'operation', result?:T) {
     return (error: any): Observable<T> => {
       console.error(error);
-      if(error?.status==this.BAD_REQUEST) {
+      if(error?.status==HttpStatusCode.BadRequest) {
         if(error?.error) {
           Object.keys(error.error).forEach(key=> {
             let value = error.error[key]
@@ -49,9 +51,18 @@ export class ApiService {
           })
         }
         // return of(error?.error || result as T);
+      } else if(error?.status == HttpStatusCode.Unauthorized || error?.status == HttpStatusCode.Unknown) {
+        this.snackbar.open(error?.status.toString()+": "+error?.statusText,
+                            error?.status == HttpStatusCode.Unauthorized ?
+                                (error?.error?.detail || 'Unauthorized') :
+                                (error?.statusText || "Unknown"), { duration: 2000 }
+        )
+        localStorage.clear();
+        this.router.navigate(['/login'])
       } else {
         return of(result as T);
       }
+      return of(null)
     };
   }
 
@@ -62,20 +73,18 @@ export class ApiService {
       if(info.data){
         url = url + this.json2queryparam(info.data)
       }
-      console.log(url)
       
       this.refreshHeader()
       console.log(this.headers)
       return this.http.get<any>(url, {headers: this.headers}).pipe(
         catchError(this.errorHandler<any>('getData', []))
         );
-      return of()
     }
   }
 
   public postData(info, isLoginorRegisterCall=false): Observable<any> {
+    console.log(info)
     if(info && info.url && info.data){
-
       this.refreshHeader(isLoginorRegisterCall)
       console.log(this.headers)
       return this.http.post<any>(this.DJANGO_SERVER_URL+ info.url, info.data, {headers: this.headers}).pipe(
@@ -85,6 +94,7 @@ export class ApiService {
   }
 
   public delete(info) {
+    console.log(info)
     if(info && info.url) {
       return this.http.delete(this.DJANGO_SERVER_URL+ info.url).pipe(
         catchError(this.errorHandler<any>('delete', []))

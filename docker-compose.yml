@@ -5,13 +5,46 @@ services :
     image: postgres:14.2
     container_name: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data  #use local volume for prod
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports: 
       - "5432:5432"
+  
+  # cache:
+  #   image: redis:7.0
+  #   container_name: redis
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+  #   volumes: 
+  #     - cache:/data
+  
+  # redis:
+  #   image: redis:7.0
+  #   container_name: redis_celery
+  #   ports:
+  #     - "6379:6379"
+  # celery:
+  #   restart: always
+  #   container_name: celery
+  #   build:
+  #     context: .
+  #   command: celery -A server worker --loglevel=info
+  #   volumes:
+  #     - "./server:/app"
+  #   environment:
+  #     - DB_HOST=${DB_HOST}
+  #     - DB_NAME=${POSTGRES_DB}
+  #     - DB_USER=${POSTGRES_USER}
+  #     - DB_PASS=${POSTGRES_PASSWORD}
+  #     - DB_PORT=${DB_PORT}
+  #   depends_on:
+  #     - redis
+  #     - server
 
   server:
     image: server
@@ -20,6 +53,14 @@ services :
              python3 manage.py migrate &&
              python3 manage.py runserver 0.0.0.0:8000"
     container_name: server
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - DB_PORT=${DB_PORT}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     build: 
       context: ./server
       #dockerfile: ./Dockerfile
@@ -29,6 +70,8 @@ services :
       - "./server:/app"
     depends_on: 
       - db
+      # - redis
+      # - cache
 
   client:
     image: client
@@ -38,3 +81,6 @@ services :
       #dockerfile: ./Dockerfile
     ports: 
       - "4201:80"
+volumes:
+  cache:
+    driver: local
