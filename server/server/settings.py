@@ -89,12 +89,23 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT'),
     }
 }
+CACHE_TTL = 60 * 15 # 15 minutes
 
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
 
-CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL')
-CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL')
+REDIS_CONTAINER_NAME=os.environ.get('REDIS_CONTAINER_NAME', 'redis')
+REDIS_USERNAME=os.environ.get('REDIS_USERNAME', "default")
+REDIS_PASSWORD=os.environ.get('REDIS_PASSWORD', "redis")
+REDIS_LOCATION=f'redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_CONTAINER_NAME}:6379/0'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': REDIS_LOCATION,
+    }
+} 
+
+
+CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL', "redis://redis:6379/0")
+CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL', "redis://redis:6379/0")
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

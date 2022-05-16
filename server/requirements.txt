@@ -1,6 +1,6 @@
-Django==3.2.13
+Django==4.0
 djangorestframework
-celery==5.2.5
+celery==5.1.1
 redis==4.3.0
 djoser
 django-cors-headers

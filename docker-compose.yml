@@ -13,16 +13,27 @@ services :
     ports: 
       - "5432:5432"
   
-  # cache:
-  #   image: redis:7.0
-  #   container_name: redis
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
-  #   command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-  #   volumes: 
-  #     - cache:/data
-  
+  cache:
+    restart: always
+    # image: redis:7.0
+    image: myredis
+    privileged: true
+    command: sh -c "./init.sh"
+    container_name: ${REDIS_CONTAINER_NAME}
+    build:
+      context: ./redis/
+    sysctls:
+      - net.core.somaxconn=512
+      # - vm.overcommit_memory=1
+    environment:
+      - REDIS_USERNAME=${REDIS_USERNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    # command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    volumes: 
+      - cache:/data:rw
+
   # redis:
   #   image: redis:7.0
   #   container_name: redis_celery
@@ -32,8 +43,8 @@ services :
   #   restart: always
   #   container_name: celery
   #   build:
-  #     context: .
-  #   command: celery -A server worker --loglevel=info
+  #     context: ./server
+  #   command: celery -A server worker -l INFO
   #   volumes:
   #     - "./server:/app"
   #   environment:
@@ -43,6 +54,7 @@ services :
   #     - DB_PASS=${POSTGRES_PASSWORD}
   #     - DB_PORT=${DB_PORT}
   #   depends_on:
+  #     - db
   #     - redis
   #     - server
 
@@ -53,6 +65,9 @@ services :
              python3 manage.py migrate &&
              python3 manage.py runserver 0.0.0.0:8000"
     container_name: server
+    links:
+      - "cache:redis"
+      - "db:postgres"
     environment:
       - DB_HOST=${DB_HOST}
       - DB_NAME=${POSTGRES_DB}
@@ -61,6 +76,9 @@ services :
       - DB_PORT=${DB_PORT}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_CONTAINER_NAME=${REDIS_CONTAINER_NAME}
+      - REDIS_USERNAME=${REDIS_USERNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     build: 
       context: ./server
       #dockerfile: ./Dockerfile
@@ -71,7 +89,7 @@ services :
     depends_on: 
       - db
       # - redis
-      # - cache
+      - cache
 
   client:
     image: client
