@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
-    'auth_app'
+    'auth_app',
+    "core"
 ]
 
 MIDDLEWARE = [
@@ -79,23 +80,51 @@ WSGI_APPLICATION = 'server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+MONGO_CONTAINER_NAME=os.environ.get('MONGO_CONTAINER_NAME', 'mongo')
+MONGO_DB_HOST=os.environ.get('MONGO_DB_HOST', "mongo")
+MONGO_DB_PORT=os.environ.get('MONGO_DB_PORT', 27017)
+MONGO_INITDB_DATABASE=os.environ.get('MONGO_INITDB_DATABASE', "mongo_db")
+MONGO_INITDB_ROOT_USERNAME=os.environ.get('MONGO_INITDB_ROOT_USERNAME', "mongo")
+MONGO_INITDB_ROOT_PASSWORD=os.environ.get('MONGO_INITDB_ROOT_PASSWORD', "mongo")
+DATABASE_ROUTERS = ['core.utils.db_routers.NonRelRouter', ]
+
+POSTGRES_DB = os.environ.get('POSTGRES_DB', "postgres")
+POSTGRES_USER = os.environ.get('POSTGRES_USER', "postgres")
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', "postgres")
+POSTGRES_DB_HOST = os.environ.get('POSTGRES_DB_HOST', "db")
+POSTGRES_DB_PORT = os.environ.get('POSTGRES_DB_PORT', 5432)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASS'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
+        'NAME': POSTGRES_DB,
+        'USER': POSTGRES_USER,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'HOST': POSTGRES_DB_HOST,
+        'PORT': POSTGRES_DB_PORT,
+    },
+    "nonrel": { 
+        "ENGINE": "djongo",
+        "NAME": MONGO_INITDB_DATABASE,
+        "CLIENT": {
+            "host": MONGO_DB_HOST,
+            "port": int(MONGO_DB_PORT),
+            "username": MONGO_INITDB_ROOT_USERNAME,
+            "password": MONGO_INITDB_ROOT_PASSWORD,
+        },
+        'TEST': {
+            'MIRROR': 'default',
+        },
     }
 }
-CACHE_TTL = 60 * 15 # 15 minutes
 
+CACHE_TTL = 60 * 15 # 15 minutes
 
 REDIS_CONTAINER_NAME=os.environ.get('REDIS_CONTAINER_NAME', 'redis')
 REDIS_USERNAME=os.environ.get('REDIS_USERNAME', "default")
 REDIS_PASSWORD=os.environ.get('REDIS_PASSWORD', "redis")
-REDIS_LOCATION=f'redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_CONTAINER_NAME}:6379/0'
+REDIS_PORT=os.environ.get('REDIS_PORT', 6379)
+REDIS_LOCATION=f'redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_CONTAINER_NAME}:{REDIS_PORT}/0'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
@@ -105,7 +134,11 @@ CACHES = {
 
 
 CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL', "redis://redis:6379/0")
-CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL', "redis://redis:6379/0")
+REDIS_CHANNEL_URL=os.environ.get('REDIS_CHANNEL_URL', "redis://redis:6379/1")
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_IGNORE_RESULT = True
+CELERYD_HIJACK_ROOT_LOGGER = False
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

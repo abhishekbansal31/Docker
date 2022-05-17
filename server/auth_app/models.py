@@ -8,6 +8,12 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'phone', 'first_name', 'last_name']
 
     USERNAME_FIELD = 'email'
+    # class Meta: 
+    #     required_db_vendor="nonrel"
+        # _use_db="default" 
 
     def get_username(self) -> str:
+        return super().email
+
+    def __str__(self) -> str:
         return super().email

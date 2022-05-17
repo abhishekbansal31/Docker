@@ -2,6 +2,8 @@ Django==4.0
 djangorestframework
 celery==5.1.1
 redis==4.3.0
+djongo
 djoser
 django-cors-headers
 psycopg2-binary>=2.8
+pymongo==3.12.3

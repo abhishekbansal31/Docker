@@ -1,20 +1,36 @@
-version: "3.7"
+version: "3.8"
 
 services :
   db:
     image: postgres:14.2
     container_name: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data  #use local volume for prod
+      - ${POSTGRES_DB_LOCAL_PATH}:/var/lib/postgresql/data  #use local volume for prod
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports: 
-      - "5432:5432"
+      - ${POSTGRES_DB_PORT}:5432
+  
+  mongo:
+    image: mongo:5.0
+    container_name: ${MONGO_CONTAINER_NAME}
+    volumes:
+      - ${MONGO_DB_LOCAL_PATH}:/data/db
+      - ${MONGO_INIT_JS_PATH}:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_DB_HOST=${MONGO_DB_HOST}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_DB_PORT=${MONGO_DB_PORT}
+    ports:
+      - ${MONGO_DB_PORT}:27017
+
   
   cache:
-    restart: always
+    # restart: always
     # image: redis:7.0
     image: myredis
     privileged: true
@@ -29,7 +45,7 @@ services :
       - REDIS_USERNAME=${REDIS_USERNAME}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     # command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes: 
       - cache:/data:rw
@@ -38,7 +54,7 @@ services :
   #   image: redis:7.0
   #   container_name: redis_celery
   #   ports:
-  #     - "6379:6379"
+  #     - "${REDIS_PORT}:6379"
   # celery:
   #   restart: always
   #   container_name: celery
@@ -48,11 +64,11 @@ services :
   #   volumes:
   #     - "./server:/app"
   #   environment:
-  #     - DB_HOST=${DB_HOST}
-  #     - DB_NAME=${POSTGRES_DB}
-  #     - DB_USER=${POSTGRES_USER}
-  #     - DB_PASS=${POSTGRES_PASSWORD}
-  #     - DB_PORT=${DB_PORT}
+  #     - POSTGRES_DB_HOST=${POSTGRES_DB_HOST}
+  #     - POSTGRES_DB=${POSTGRES_DB}
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #     - POSTGRES_DB_PORT=${POSTGRES_DB_PORT}
   #   depends_on:
   #     - db
   #     - redis
@@ -62,43 +78,57 @@ services :
     image: server
     command: >
       sh -c "python3 manage.py collectstatic --noinput &&
+             python3 manage.py makemigrations &&
              python3 manage.py migrate &&
+             python3 manage.py migrate --database="nonrel" &&
              python3 manage.py runserver 0.0.0.0:8000"
-    container_name: server
+    container_name: ${DJANGO_CONTAINER_NAME}
     links:
       - "cache:redis"
       - "db:postgres"
+    # env_file: .env
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASS=${POSTGRES_PASSWORD}
-      - DB_PORT=${DB_PORT}
+      - POSTGRES_DB_HOST=${POSTGRES_DB_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB_PORT=${POSTGRES_DB_PORT}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_CHANNEL_URL=${REDIS_CHANNEL_URL}
       - REDIS_CONTAINER_NAME=${REDIS_CONTAINER_NAME}
       - REDIS_USERNAME=${REDIS_USERNAME}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PORT=${REDIS_PORT}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_DB_HOST=${MONGO_DB_HOST}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_DB_PORT=${MONGO_DB_PORT}
     build: 
       context: ./server
       #dockerfile: ./Dockerfile
     ports: 
-      - "8001:8000"
+      - "${DJANGO_PORT}:8000"
     volumes: 
       - "./server:/app"
     depends_on: 
       - db
-      # - redis
       - cache
+      # - redis
+      - mongo
 
   client:
     image: client
-    container_name: client
+    container_name: ${ANGULAR_CONTAINER_NAME}
     build: 
       context: ./client/
       #dockerfile: ./Dockerfile
+    environment:
+      - DJANGO_PORT=${DJANGO_PORT}
+      - NGINX_PORT=${NGINX_PORT}
     ports: 
-      - "4201:80"
+      - ${ANGULAR_PORT}:${NGINX_PORT}
 volumes:
   cache:
     driver: local

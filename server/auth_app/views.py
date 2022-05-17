@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.views import APIView
+from auth_app.models import User
 
 import server.settings as settings 
 # Create your views here.
@@ -20,4 +21,5 @@ class restricted(APIView):
     @method_decorator(cache_page(CACHE_TTL))
     @method_decorator(vary_on_cookie)
     def get(self, request, format=None):
-        return Response(data='any message !!!!!!!!!', status=status.HTTP_200_OK)
+        # user = User.objects.get(pk=1)
+        return Response(data='any message !!!!!!!!! ', status=status.HTTP_200_OK)

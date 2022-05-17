@@ -51,12 +51,24 @@ export class ApiService {
           })
         }
         // return of(error?.error || result as T);
-      } else if(error?.status == HttpStatusCode.Unauthorized || error?.status == HttpStatusCode.Unknown) {
-        this.snackbar.open(error?.status.toString()+": "+error?.statusText,
-                            error?.status == HttpStatusCode.Unauthorized ?
-                                (error?.error?.detail || 'Unauthorized') :
-                                (error?.statusText || "Unknown"), { duration: 2000 }
-        )
+      } else if(error?.status == HttpStatusCode.Unauthorized
+                || error?.status == HttpStatusCode.Unknown
+                || error?.status == HttpStatusCode.InternalServerError) {
+        let action = ''
+        switch(error?.status) {
+          case HttpStatusCode.Unauthorized:
+            action = (error?.error?.detail || 'Unauthorized')
+            break;
+          case HttpStatusCode.InternalServerError:
+            action = (error?.statusText || "Internal Server Error")
+            break;
+          default:
+            action = (error?.statusText || "Unknown")
+            break;
+        }
+        this.snackbar.open(action, error?.status.toString(), {
+          duration: 2000
+        })
         localStorage.clear();
         this.router.navigate(['/login'])
       } else {

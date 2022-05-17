@@ -35,4 +35,4 @@ COPY --from=build-step /client/dist/client/* /usr/share/nginx/html/
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bkup
 COPY nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80
+EXPOSE ${NGINX_PORT}
