@@ -9,8 +9,6 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     # class Meta: 
-    #     required_db_vendor="nonrel"
-        # _use_db="default" 
 
     def get_username(self) -> str:
         return super().email

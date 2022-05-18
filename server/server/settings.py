@@ -86,7 +86,8 @@ MONGO_DB_PORT=os.environ.get('MONGO_DB_PORT', 27017)
 MONGO_INITDB_DATABASE=os.environ.get('MONGO_INITDB_DATABASE', "mongo_db")
 MONGO_INITDB_ROOT_USERNAME=os.environ.get('MONGO_INITDB_ROOT_USERNAME', "mongo")
 MONGO_INITDB_ROOT_PASSWORD=os.environ.get('MONGO_INITDB_ROOT_PASSWORD', "mongo")
-DATABASE_ROUTERS = ['core.utils.db_routers.NonRelRouter', ]
+MONGO_DB_NAME_DJANGO=os.environ.get('MONGO_DB_NAME_DJANGO', "mongo")
+DATABASE_ROUTERS = ['server.utils.db_routers.DatabaseRouter', ]
 
 POSTGRES_DB = os.environ.get('POSTGRES_DB', "postgres")
 POSTGRES_USER = os.environ.get('POSTGRES_USER', "postgres")
@@ -103,7 +104,7 @@ DATABASES = {
         'HOST': POSTGRES_DB_HOST,
         'PORT': POSTGRES_DB_PORT,
     },
-    "nonrel": { 
+    MONGO_DB_NAME_DJANGO: { 
         "ENGINE": "djongo",
         "NAME": MONGO_INITDB_DATABASE,
         "CLIENT": {
