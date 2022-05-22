@@ -18,7 +18,7 @@ export class HomeComponent implements OnInit {
 
     this.token = localStorage.getItem('token')
     if(this.token && this.token!=='') {
-       this.apiService.getData({url: this.apiService.auth + 'restricted/', data:{} }).subscribe(
+       this.apiService.getData({url: this.apiService.core + 'home/', data:{} }).subscribe(
         result => {
           console.log(result)
           this.api_data = result

@@ -16,6 +16,7 @@ export class ApiService {
 
   api = 'api/'
   auth = 'auth/'
+  core = 'core/'
   users = 'users/'
   token = 'token/'
   login = 'login/'
