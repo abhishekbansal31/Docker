@@ -5,4 +5,5 @@
 3) Client: Angular 11(binaries running on nginx)
 4) Server: Django 4.0(Used Djoser for User authentication implementation)
 5) Database: Postgres & MongoDB
-6) Cache: Redis
+6) Task Queue: Celery
+7) Cache & Message Broker: Redis
