@@ -20,8 +20,8 @@ CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 class home(APIView):
     permission_classes = ( IsAuthenticated, )
 
-    # @method_decorator(cache_page(CACHE_TTL))
-    # @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
+    @method_decorator(vary_on_cookie)
     def get(self, request, format=None):
         xyz = XYZ.objects.all()
         return Response(data='any message !!!!!!!!! ', status=status.HTTP_200_OK)

@@ -22,8 +22,6 @@ services :
 
   
   cache:
-    # restart: always
-    # image: redis:7.0
     image: myredis
     privileged: true
     command: sh -c "./init.sh"
@@ -40,29 +38,18 @@ services :
     volumes: 
       - cache:/data:rw
 
-  # redis:
-  #   image: redis:7.0
-  #   container_name: redis_celery
-  #   ports:
-  #     - "${REDIS_PORT}:6379"
-  # celery:
-  #   restart: always
-  #   container_name: celery
-  #   build:
-  #     context: ./server
-  #   command: celery -A server worker -l INFO
-  #   volumes:
-  #     - "./server:/app"
-  #   environment:
-  #     - POSTGRES_DB_HOST=${POSTGRES_DB_HOST}
-  #     - POSTGRES_DB=${POSTGRES_DB}
-  #     - POSTGRES_USER=${POSTGRES_USER}
-  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  #     - POSTGRES_DB_PORT=${POSTGRES_DB_PORT}
-  #   depends_on:
-  #     - db
-  #     - redis
-  #     - server
+  celery:
+    container_name: celery
+    build:
+      context: ./server
+    command: celery -A server worker -l INFO
+    volumes:
+      - "./server:/app"
+    env_file: ./.env
+    depends_on:
+      - db
+      - cache
+      - server
 
   server:
     image: server
@@ -87,7 +74,6 @@ services :
     depends_on: 
       - db
       - cache
-      # - redis
       - mongo
 
   client:
